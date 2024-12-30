@@ -31,9 +31,7 @@ func autoMigrates(db *gorm.DB) error {
 }
 
 func dropTables(db *gorm.DB) error {
-	return db.Migrator().DropTable(
-		&model.User{},
-	)
+	return db.Migrator().DropTable()
 }
 
 func setupJoinTables(db *gorm.DB) error {

@@ -63,7 +63,7 @@ func LoadConfig() (Config, error) {
 		log.Printf("Error reading config file: %s, using default values or environment variables", err)
 	}
 
-	readFlags()
+	// readFlags()
 
 	// add value to the config
 	config := Config{
@@ -75,8 +75,6 @@ func LoadConfig() (Config, error) {
 		ShutdownTimeout: viper.GetInt("SHUTDOWN_TIMEOUT"),
 		PrivateKey:      viper.GetString("PRIVATE_KEY"),
 		PublicKey:       viper.GetString("PUBLIC_KEY"),
-
-		ProfitMargin: viper.GetFloat64("PROFIT_MARGIN"),
 
 		RedisConfig: loadRedisConfig(),
 	}
@@ -118,11 +116,9 @@ func setDefaultValues() {
 	viper.SetDefault("DB_PASSWORD", "admin")
 	viper.SetDefault("DB_NAME", "database")
 	viper.SetDefault("APP_DEBUG", true)
-	viper.SetDefault("APP_SECRET", "team-2")
+	viper.SetDefault("APP_SECRET", "team-1")
 	viper.SetDefault("SERVER_PORT", ":8080")
 	viper.SetDefault("SHUTDOWN_TIMEOUT", 5)
-
-	viper.SetDefault("PROFIT_MARGIN", 10.00)
 
 	viper.SetDefault("DB_MIGRATE", false)
 	viper.SetDefault("DB_SEEDING", false)

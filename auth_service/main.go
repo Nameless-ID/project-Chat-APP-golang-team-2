@@ -1,7 +1,7 @@
 package main
 
 import (
-	"flag"
+	// "flag"
 	"log"
 	"net"
 	"project_chat_app/auth_service/infra"
@@ -17,6 +17,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// if shouldNotLaunchServer() {
+	// 	return
+	// }
 
 	var listener net.Listener
 	listener, err = net.Listen("tcp", ":50051")
@@ -31,3 +34,19 @@ func main() {
 	log.Println("Server running on port 50051")
 }
 
+// func shouldNotLaunchServer() bool {
+// 	shouldNotLaunch := false
+
+// 	flag.Parse()
+// 	flag.Visit(func(f *flag.Flag) {
+// 		if f.Name == "m" {
+// 			shouldNotLaunch = true
+// 		}
+
+// 		if f.Name == "s" {
+// 			shouldNotLaunch = true
+// 		}
+// 	})
+
+// 	return shouldNotLaunch
+// }

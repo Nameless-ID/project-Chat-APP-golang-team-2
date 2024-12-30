@@ -34,6 +34,6 @@ func NewServiceContext() (*ServiceContext, error) {
 
 	repo := repository.NewRepository(db, logger)
 	return &ServiceContext{
-		Service: service.NewService(*repo),
+		Service: service.NewService(*repo, appConfig, logger),
 	}, nil
 }
