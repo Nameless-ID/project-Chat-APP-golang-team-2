@@ -7,7 +7,8 @@ import (
 
 type UserService interface {
     GetUserInfo(userID string) (*models.User, error)
-    GetOnlineUsers() ([]models.User, error)
+    GetAllUsers() ([]*models.User, error)
+    UpdateUser(user *models.User) error
 }
 
 type userService struct {
@@ -22,6 +23,10 @@ func (s *userService) GetUserInfo(userID string) (*models.User, error) {
     return s.repo.GetUserByID(userID)
 }
 
-func (s *userService) GetOnlineUsers() ([]models.User, error) {
+func (s *userService) GetAllUsers() ([]*models.User, error) {
     return s.repo.GetAllUsers()
+}
+
+func (s *userService) UpdateUser(user *models.User) error {
+	return s.repo.UpdateUser(user)
 }

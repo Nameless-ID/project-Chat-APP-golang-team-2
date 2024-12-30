@@ -31,7 +31,7 @@ func (h *UserController) GetUserInfo(c *gin.Context) {
 }
 
 func (h *UserController) GetOnlineUsers(c *gin.Context) {
-    users, err := h.service.GetOnlineUsers()
+    users, err := h.service.GetAllUsers()
     if err != nil {
 		if err.Error() == "users not found" {
 			c.JSON(http.StatusNotFound, util.ErrorResponse(err.Error()))

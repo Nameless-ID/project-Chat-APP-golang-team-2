@@ -9,7 +9,8 @@ import (
 
 type UserRepository interface {
     GetUserByID(id string) (*models.User, error)
-    GetAllUsers() ([]models.User, error)
+    GetAllUsers() ([]*models.User, error)
+	UpdateUser(user *models.User) error
 }
 
 type userRepo struct {
@@ -32,9 +33,9 @@ func (r *userRepo) GetUserByID(id string) (*models.User, error) {
     return &user, nil
 }
 
-func (r *userRepo) GetAllUsers() ([]models.User, error) {
-    var users []models.User
-    err := r.db.Model(models.User{}).Where("is_active = ?", true).Find(&users).Error
+func (r *userRepo) GetAllUsers() ([]*models.User, error) {
+    var users []*models.User
+    err := r.db.Model(models.User{}).Find(&users).Error
 	if err != nil {
 		return nil, err
 	}
@@ -42,4 +43,10 @@ func (r *userRepo) GetAllUsers() ([]models.User, error) {
 		return nil, errors.New("users not found")
 	}
     return users, nil
+}
+func (r *userRepo) UpdateUser(user *models.User) error {
+	if err := r.db.Model(&user).Where("id = ?", user.ID).Updates(user).Error; err != nil {
+		return err
+	}
+	return nil
 }

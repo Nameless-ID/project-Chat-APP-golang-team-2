@@ -5,10 +5,12 @@ import (
 	"log"
 	"net"
 	"strconv"
+	"user-service/models"
 	"user-service/proto"
 	"user-service/service"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -35,24 +37,48 @@ func (s *server) GetUserInfo(ctx context.Context, req *proto.UserRequest) (*prot
 	}, nil
 }
 
-func (s *server) GetOnlineUsers(ctx context.Context, req *proto.Empty) (*proto.UsersList, error) {
-	users, err := s.userService.GetOnlineUsers()
+func (s *server) GetAllUsers(ctx context.Context, req *proto.Empty) (*proto.UsersList, error) {
+	users, err := s.userService.GetAllUsers()
 	if err != nil {
 		return nil, err
 	}
 	var userResponses []*proto.UserResponse
 	for _, user := range users {
-		if user.IsActive {
-			userResponses = append(userResponses, &proto.UserResponse{
-				UserId:   strconv.Itoa(user.ID),
-				Name:     user.Name,
-				Email:    user.Email,
-				IsActive: user.IsActive,
-			})
 
-		}
+		userResponses = append(userResponses, &proto.UserResponse{
+			UserId:   strconv.Itoa(user.ID),
+			Name:     user.Name,
+			Email:    user.Email,
+			IsActive: user.IsActive,
+		})
+
 	}
 	return &proto.UsersList{Users: userResponses}, nil
+}
+
+func (s *server) UpdateUser(ctx context.Context, req *proto.UpdateUserRequest) (*proto.UpdateUserResponse, error) {
+	existingUser, err := s.userService.GetUserInfo(strconv.Itoa(int(req.UserId)))
+	if err != nil {
+		return nil, grpc.Errorf(codes.NotFound, "User with ID %d not found", req.UserId)
+	}
+	
+	if req.Name == "" {
+		return nil, grpc.Errorf(codes.InvalidArgument, "Name cannot be empty")
+	}
+	user := &models.User{
+		ID:       existingUser.ID,
+		Name:     req.Name,
+		Email:    req.Email,
+		IsActive: req.IsActive,
+	}
+
+	err = s.userService.UpdateUser(user)
+	if err != nil {
+		log.Printf("Error updating user: %v", err)
+		return nil, err
+	}
+
+	return &proto.UpdateUserResponse{Success: true}, nil
 }
 
 func StartGRPCServer(userService service.UserService) {

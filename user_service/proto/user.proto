@@ -6,9 +6,20 @@ option go_package = "./proto";
 
 service UserService {
     rpc GetUserInfo (UserRequest) returns (UserResponse);
-    rpc GetOnlineUsers (Empty) returns (UsersList);
+    rpc GetAllUsers (Empty) returns (UsersList);
+    rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse);
 }
 
+message UpdateUserRequest {
+    int32 user_id = 1;
+    string name = 2;
+    string email = 3;
+    bool is_active = 4;
+}
+
+message UpdateUserResponse {
+    bool success = 1;
+}
 message UserRequest {
     string user_id = 1;
 }
