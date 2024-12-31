@@ -44,14 +44,6 @@ func ConnectDB(cfg config.Config) (*gorm.DB, error) {
 		return nil, fmt.Errorf("failed to migrate database: %v", err)
 	}
 
-	// // Call See function to auto-migrate database schemas
-	if cfg.DB.Seeding {
-		err = SeedAll(db)
-	}
-	if err != nil {
-		return nil, err
-	}
-
 	return db, nil
 }
 

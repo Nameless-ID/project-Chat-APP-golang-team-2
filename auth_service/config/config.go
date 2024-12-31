@@ -15,8 +15,6 @@ type Config struct {
 	ServerPort      string
 	ShutdownTimeout int
 
-	ProfitMargin float64
-
 	PrivateKey string
 	PublicKey  string
 }
@@ -116,7 +114,7 @@ func setDefaultValues() {
 	viper.SetDefault("DB_PASSWORD", "admin")
 	viper.SetDefault("DB_NAME", "database")
 	viper.SetDefault("APP_DEBUG", true)
-	viper.SetDefault("APP_SECRET", "team-1")
+	viper.SetDefault("APP_SECRET", "team-2")
 	viper.SetDefault("SERVER_PORT", ":8080")
 	viper.SetDefault("SHUTDOWN_TIMEOUT", 5)
 

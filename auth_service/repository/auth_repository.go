@@ -32,8 +32,22 @@ func (repo *AuthRepository) FindByEmail(email string) (*model.User, error) {
 	var user model.User
 	err := repo.DB.Where("email = ?", email).First(&user).Error
 	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
 		repo.log.Error("Failed to find user by email", zap.Error(err))
 		return nil, err
 	}
 	return &user, nil
+}
+func (repo *AuthRepository) Update(user *model.User) error {
+	return repo.DB.Transaction(func(tx *gorm.DB) error {
+		// Update user
+		err := tx.Save(&user).Error
+		if err != nil {
+			repo.log.Error("Failed to update user", zap.Error(err))
+			return err
+		}
+		return nil
+	})
 }

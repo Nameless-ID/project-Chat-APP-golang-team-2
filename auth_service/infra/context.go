@@ -3,6 +3,7 @@ package infra
 import (
 	"project_chat_app/auth_service/config"
 	"project_chat_app/auth_service/database"
+	"project_chat_app/auth_service/infra/jwt"
 	"project_chat_app/auth_service/log"
 	"project_chat_app/auth_service/repository"
 	"project_chat_app/auth_service/service"
@@ -10,6 +11,8 @@ import (
 
 type ServiceContext struct {
 	Service *service.Service
+	Cacher  database.Cacher
+	JWT     jwt.JWT
 }
 
 func NewServiceContext() (*ServiceContext, error) {
@@ -32,8 +35,12 @@ func NewServiceContext() (*ServiceContext, error) {
 		return handlerError(err)
 	}
 
+	rdb := database.NewCacher(appConfig, 60*60)
+
+	jwtLib := jwt.NewJWT(appConfig.PrivateKey, appConfig.PublicKey, logger)
+
 	repo := repository.NewRepository(db, logger)
 	return &ServiceContext{
-		Service: service.NewService(*repo, appConfig, logger),
+		Service: service.NewService(*repo, appConfig, logger, rdb, jwtLib),
 	}, nil
 }
