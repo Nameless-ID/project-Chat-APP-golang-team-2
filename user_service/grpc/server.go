@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 )
 
 type server struct {
@@ -23,33 +24,19 @@ func NewServer(userService service.UserService) *server {
 	return &server{userService: userService}
 }
 
-func (s *server) GetUserInfo(ctx context.Context, req *proto.UserRequest) (*proto.UserResponse, error) {
-	user, err := s.userService.GetUserInfo(req.UserId)
-	if err != nil {
-		log.Printf("Error fetching user info for UserId %s: %v", req.UserId, err)
-		return nil, err
-	}
-	return &proto.UserResponse{
-		UserId:   strconv.Itoa(user.ID),
-		Name:     user.Name,
-		Email:    user.Email,
-		IsActive: user.IsActive,
-	}, nil
-}
-
 func (s *server) GetAllUsers(ctx context.Context, req *proto.Empty) (*proto.UsersList, error) {
 	users, err := s.userService.GetAllUsers()
 	if err != nil {
 		return nil, err
 	}
-	var userResponses []*proto.UserResponse
+	var userResponses []*proto.User
 	for _, user := range users {
-
-		userResponses = append(userResponses, &proto.UserResponse{
-			UserId:   strconv.Itoa(user.ID),
-			Name:     user.Name,
-			Email:    user.Email,
-			IsActive: user.IsActive,
+		userResponses = append(userResponses, &proto.User{
+			Id:        int32(user.ID),
+			Email:     user.Email,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+			IsOnline:  user.IsOnline,
 		})
 
 	}
@@ -57,28 +44,33 @@ func (s *server) GetAllUsers(ctx context.Context, req *proto.Empty) (*proto.User
 }
 
 func (s *server) UpdateUser(ctx context.Context, req *proto.UpdateUserRequest) (*proto.UpdateUserResponse, error) {
-	existingUser, err := s.userService.GetUserInfo(strconv.Itoa(int(req.UserId)))
+
+	if req.FirstName == "" || req.LastName == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "First name or last name cannot be empty")
+	}
+
+	existingUser, err := s.userService.GetUserInfo(strconv.Itoa(int(req.Id)))
 	if err != nil {
-		return nil, grpc.Errorf(codes.NotFound, "User with ID %d not found", req.UserId)
+		if err.Error() == "user not found" {
+			return nil, status.Errorf(codes.NotFound, "User with ID %d not found", req.Id)
+		}
+		log.Printf("Error fetching user info: %v", err)
+		return nil, status.Errorf(codes.Internal, "Failed to fetch user info")
 	}
-	
-	if req.Name == "" {
-		return nil, grpc.Errorf(codes.InvalidArgument, "Name cannot be empty")
-	}
+
 	user := &models.User{
-		ID:       existingUser.ID,
-		Name:     req.Name,
-		Email:    req.Email,
-		IsActive: req.IsActive,
+		ID:        existingUser.ID,
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
 	}
 
-	err = s.userService.UpdateUser(user)
-	if err != nil {
+	if err := s.userService.UpdateUser(user); err != nil {
 		log.Printf("Error updating user: %v", err)
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "Failed to update user: %v", err)
 	}
 
-	return &proto.UpdateUserResponse{Success: true}, nil
+	log.Printf("User with ID %d updated successfully", req.Id)
+	return &proto.UpdateUserResponse{Message: "Update success"}, nil
 }
 
 func StartGRPCServer(userService service.UserService) {
