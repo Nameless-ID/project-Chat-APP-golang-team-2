@@ -4,7 +4,9 @@ import (
 	"context"
 	"log"
 	"net"
+	"os"
 	"strconv"
+	"user-service/config"
 	"user-service/models"
 	"user-service/proto"
 	"user-service/service"
@@ -24,10 +26,11 @@ func NewServer(userService service.UserService) *server {
 	return &server{userService: userService}
 }
 
-func (s *server) GetAllUsers(ctx context.Context, req *proto.Empty) (*proto.UsersList, error) {
-	users, err := s.userService.GetAllUsers()
+func (s *server) GetAllUsers(ctx context.Context, req *proto.GetAllUsersRequest) (*proto.UsersList, error) {
+	name := req.GetName()
+	users, err := s.userService.GetAllUsers(name)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "Failed to get all users: %v", err)
 	}
 	var userResponses []*proto.User
 	for _, user := range users {
@@ -47,6 +50,9 @@ func (s *server) UpdateUser(ctx context.Context, req *proto.UpdateUserRequest) (
 
 	if req.FirstName == "" || req.LastName == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "First name or last name cannot be empty")
+	}
+	if len(req.FirstName) < 2 || len(req.LastName) < 2 {
+		return nil, status.Errorf(codes.InvalidArgument, "First name or last name min 2 characters")
 	}
 
 	existingUser, err := s.userService.GetUserInfo(strconv.Itoa(int(req.Id)))
@@ -74,7 +80,9 @@ func (s *server) UpdateUser(ctx context.Context, req *proto.UpdateUserRequest) (
 }
 
 func StartGRPCServer(userService service.UserService) {
-	lis, err := net.Listen("tcp", ":50051")
+	config.LoadEnv()
+	grpcPort := os.Getenv("GRPC_PORT")
+	lis, err := net.Listen("tcp", grpcPort)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

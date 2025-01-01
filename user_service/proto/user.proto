@@ -5,7 +5,7 @@ package users;
 option go_package = "./proto";
 
 service UserService {
-    rpc GetAllUsers (Empty) returns (UsersList);
+    rpc GetAllUsers (GetAllUsersRequest) returns (UsersList);
     rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse);
 }
 
@@ -17,6 +17,10 @@ message UpdateUserRequest {
 
 message UpdateUserResponse {
     string message = 1;
+}
+
+message GetAllUsersRequest {
+    string name = 1;
 }
 
 message User {
