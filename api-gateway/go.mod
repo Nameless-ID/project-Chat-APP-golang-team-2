@@ -1,6 +1,6 @@
-module project_chat_app
+module api-gateway
 
-go 1.23.0
+go 1.23.2
 
 require (
 	github.com/gin-gonic/gin v1.10.0
