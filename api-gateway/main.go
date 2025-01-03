@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"strconv"
 
-	authpb "project_chat_app/api-gateway/auth-service"
-	chatpb "project_chat_app/api-gateway/chat-service/script"
-	"project_chat_app/api-gateway/middleware"
-	userpb "project_chat_app/api-gateway/user-service/proto"
+	authpb "api-gateway/auth-service"
+	chatpb "api-gateway/chat-service/script"
+	"api-gateway/middleware"
+	userpb "api-gateway/user-service/proto"
 
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
@@ -24,7 +24,7 @@ var (
 
 func main() {
 	// Inisialisasi koneksi gRPC ke Auth Service
-	conn, err := grpc.Dial("103.127.132.149:4041", grpc.WithInsecure())
+	conn, err := grpc.Dial("103.127.132.149:50052", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Failed to connect to Auth Service: %v", err)
 	}
@@ -32,7 +32,7 @@ func main() {
 	authClient = authpb.NewAuthServiceClient(conn)
 
 	// Inisialisasi koneksi gRPC ke User Service
-	userConn, err := grpc.Dial("103.127.132.149:4042", grpc.WithInsecure())
+	userConn, err := grpc.Dial("103.127.132.149:50053", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Failed to connect to User Service: %v", err)
 	}
@@ -40,7 +40,7 @@ func main() {
 	userClient = userpb.NewUserServiceClient(userConn)
 
 	// Inisialisasi koneksi gRPC ke Chat Service
-	chatConn, err := grpc.Dial("103.127.132.149:4043", grpc.WithInsecure())
+	chatConn, err := grpc.Dial("103.127.132.149:50054", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Failed to connect to Chat Service: %v", err)
 	}
@@ -66,8 +66,8 @@ func main() {
 	router.GET("/chat/messages", listMessageHandler)
 	router.GET("/chat/messages/:sender_id", listMessagesBySenderHandler)
 
-	log.Println("API Gateway running on port 4040...")
-	router.Run(":4040")
+	log.Println("API Gateway running on port 50051...")
+	router.Run(":50051")
 }
 
 // Handler untuk Register
