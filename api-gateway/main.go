@@ -4,18 +4,22 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strconv"
 
+	authpb "project_chat_app/api-gateway/auth-service"
+	chatpb "project_chat_app/api-gateway/chat-service/script"
 	"project_chat_app/api-gateway/middleware"
-	authpb "project_chat_app/auth-service"
-	userpb "project_chat_app/user-service/proto"
+	userpb "project_chat_app/api-gateway/user-service/proto"
 
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 var (
 	authClient authpb.AuthServiceClient
 	userClient userpb.UserServiceClient
+	chatClient chatpb.ChatServiceClient
 )
 
 func main() {
@@ -25,7 +29,6 @@ func main() {
 		log.Fatalf("Failed to connect to Auth Service: %v", err)
 	}
 	defer conn.Close()
-
 	authClient = authpb.NewAuthServiceClient(conn)
 
 	// Inisialisasi koneksi gRPC ke User Service
@@ -36,6 +39,14 @@ func main() {
 	defer userConn.Close()
 	userClient = userpb.NewUserServiceClient(userConn)
 
+	// Inisialisasi koneksi gRPC ke Chat Service
+	chatConn, err := grpc.Dial("103.127.132.149:4043", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Failed to connect to Chat Service: %v", err)
+	}
+	defer chatConn.Close()
+	chatClient = chatpb.NewChatServiceClient(chatConn)
+
 	router := gin.Default()
 
 	// Routing untuk Auth
@@ -43,11 +54,17 @@ func main() {
 	router.POST("/auth/login", loginHandler)
 	router.POST("/auth/verify-otp", verifyOTPHandler)
 
+	// Middleware untuk autentikasi
 	router.Use(middleware.Authentication())
 
 	// Routing untuk User Service
-	router.GET("/user/:id", getUserInfoHandler)
-	router.GET("/users/online", getOnlineUsersHandler)
+	router.GET("/users", getAllUsersHandler)
+	router.PUT("/users/:id", updateUserHandler)
+
+	// Routing untuk Chat Service
+	router.POST("/chat/send", sendMessageHandler)
+	router.GET("/chat/messages", listMessageHandler)
+	router.GET("/chat/messages/:sender_id", listMessagesBySenderHandler)
 
 	log.Println("API Gateway running on port 4040...")
 	router.Run(":4040")
@@ -109,41 +126,122 @@ func verifyOTPHandler(c *gin.Context) {
 	})
 }
 
-// Handler untuk mendapatkan informasi pengguna
-func getUserInfoHandler(c *gin.Context) {
-	userID := c.Param("id")
+// Handler untuk GetAllUsers
+func getAllUsersHandler(c *gin.Context) {
+	name := c.Query("name")
+	req := &userpb.GetAllUsersRequest{Name: name}
 
-	res, err := userClient.GetUserInfo(context.Background(), &userpb.UserRequest{UserId: userID})
+	res, err := userClient.GetAllUsers(context.Background(), req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user info"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"user_id":   res.UserId,
-		"name":      res.Name,
-		"email":     res.Email,
-		"is_active": res.IsActive,
-	})
-}
-
-// Handler untuk mendapatkan daftar pengguna online
-func getOnlineUsersHandler(c *gin.Context) {
-	res, err := userClient.GetOnlineUsers(context.Background(), &userpb.Empty{})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get online users"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get users"})
 		return
 	}
 
 	users := []gin.H{}
 	for _, user := range res.Users {
 		users = append(users, gin.H{
-			"user_id":   user.UserId,
-			"name":      user.Name,
-			"email":     user.Email,
-			"is_active": user.IsActive,
+			"id":         user.Id,
+			"email":      user.Email,
+			"first_name": user.FirstName,
+			"last_name":  user.LastName,
+			"is_online":  user.IsOnline,
 		})
 	}
 
 	c.JSON(http.StatusOK, users)
+}
+
+// Handler untuk UpdateUser
+func updateUserHandler(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	var req userpb.UpdateUserRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	req.Id = int32(id)
+
+	res, err := userClient.UpdateUser(context.Background(), &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": res.Message})
+}
+
+func sendMessageHandler(c *gin.Context) {
+	var req chatpb.SendMessageRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	res, err := chatClient.SendMessage(context.Background(), &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send message"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": res.Status})
+}
+
+func listMessageHandler(c *gin.Context) {
+	res, err := chatClient.ListMessage(context.Background(), &emptypb.Empty{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list messages"})
+		return
+	}
+
+	messages := []gin.H{}
+	for _, msg := range res.Messages {
+		messages = append(messages, gin.H{
+			"sender":  msg.Sender,
+			"message": msg.Message,
+		})
+	}
+
+	c.JSON(http.StatusOK, messages)
+}
+
+func listMessagesBySenderHandler(c *gin.Context) {
+	senderID := c.Query("sender_id")
+
+	senderIDInt, err := strconv.Atoi(senderID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid sender ID"})
+		return
+	}
+
+	// Konversi ke int32
+	senderIDInt32 := int32(senderIDInt)
+
+	// Panggil service dengan senderID bertipe int32
+	res, err := chatClient.ListMessageBySender(context.Background(), &chatpb.ListMessageBySenderRequest{
+		SenderId: senderIDInt32,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list messages by sender"})
+		return
+	}
+
+	// Siapkan respon
+	messages := []gin.H{}
+	for _, msg := range res.Messages {
+		messages = append(messages, gin.H{
+			"message": msg.Message,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"sender_name": res.SenderName,
+		"messages":    messages,
+	})
 }

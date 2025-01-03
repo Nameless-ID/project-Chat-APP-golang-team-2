@@ -1,6 +1,8 @@
 package apigateway
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v8"
 	"golang.org/x/net/context"
