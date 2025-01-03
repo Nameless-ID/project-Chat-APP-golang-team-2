@@ -1,14 +1,14 @@
 package service
 
 import (
+	"auth-service/database"
+	"auth-service/helper"
+	"auth-service/infra/jwt"
+	"auth-service/model"
+	pb "auth-service/proto"
+	"auth-service/repository"
 	"context"
 	"encoding/json"
-	"project_chat_app/auth_service/database"
-	"project_chat_app/auth_service/helper"
-	"project_chat_app/auth_service/infra/jwt"
-	"project_chat_app/auth_service/model"
-	pb "project_chat_app/auth_service/proto"
-	"project_chat_app/auth_service/repository"
 	"strconv"
 	"strings"
 	"time"

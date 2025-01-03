@@ -1,13 +1,13 @@
 package service
 
 import (
+	"auth-service/config"
 	"bytes"
 	"context"
 	"fmt"
 	"html/template"
 	"os"
 	"path/filepath"
-	"project_chat_app/auth_service/config"
 	"time"
 
 	"github.com/mailersend/mailersend-go"

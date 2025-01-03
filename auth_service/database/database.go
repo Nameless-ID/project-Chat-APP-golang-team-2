@@ -1,10 +1,10 @@
 package database
 
 import (
+	"auth-service/config"
 	"fmt"
 	"log"
 	"os"
-	"project_chat_app/auth_service/config"
 	"time"
 
 	"gorm.io/driver/postgres"

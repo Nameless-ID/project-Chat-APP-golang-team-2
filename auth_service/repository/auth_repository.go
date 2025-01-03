@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"project_chat_app/auth_service/model"
+	"auth-service/model"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"

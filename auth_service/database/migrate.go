@@ -1,7 +1,7 @@
 package database
 
 import (
-	"project_chat_app/auth_service/model"
+	"auth-service/model"
 
 	"gorm.io/gorm"
 )

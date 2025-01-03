@@ -1,12 +1,12 @@
 package infra
 
 import (
-	"project_chat_app/auth_service/config"
-	"project_chat_app/auth_service/database"
-	"project_chat_app/auth_service/infra/jwt"
-	"project_chat_app/auth_service/log"
-	"project_chat_app/auth_service/repository"
-	"project_chat_app/auth_service/service"
+	"auth-service/config"
+	"auth-service/database"
+	"auth-service/infra/jwt"
+	"auth-service/log"
+	"auth-service/repository"
+	"auth-service/service"
 )
 
 type ServiceContext struct {

@@ -1,9 +1,9 @@
 package log
 
 import (
+	"auth-service/config"
 	"log"
 	"os"
-	"project_chat_app/auth_service/config"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

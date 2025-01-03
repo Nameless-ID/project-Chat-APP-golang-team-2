@@ -1,10 +1,10 @@
 package database
 
 import (
+	"auth-service/config"
 	"context"
 	"fmt"
 	"log"
-	"project_chat_app/auth_service/config"
 	"time"
 
 	"github.com/go-redis/redis/v8"

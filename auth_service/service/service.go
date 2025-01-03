@@ -1,10 +1,10 @@
 package service
 
 import (
-	"project_chat_app/auth_service/config"
-	"project_chat_app/auth_service/database"
-	"project_chat_app/auth_service/infra/jwt"
-	"project_chat_app/auth_service/repository"
+	"auth-service/config"
+	"auth-service/database"
+	"auth-service/infra/jwt"
+	"auth-service/repository"
 
 	"go.uber.org/zap"
 )

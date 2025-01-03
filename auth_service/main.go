@@ -2,11 +2,11 @@ package main
 
 import (
 	// "flag"
+	"auth-service/infra"
 	"log"
 	"net"
-	"project_chat_app/auth_service/infra"
 
-	pb "project_chat_app/auth_service/proto"
+	pb "auth-service/proto"
 
 	"google.golang.org/grpc"
 )
