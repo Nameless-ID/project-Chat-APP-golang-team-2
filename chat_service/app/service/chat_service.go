@@ -1,13 +1,13 @@
 package service
 
 import (
+	"chat-service/app/models"
+	"chat-service/helper"
+	pb "chat-service/proto/script"
 	"context"
 	"encoding/json"
 	"fmt"
 	"log"
-	"project_chat_app/chat_service/app/models"
-	"project_chat_app/chat_service/helper"
-	pb "project_chat_app/chat_service/proto/script"
 	"sync"
 	"time"
 

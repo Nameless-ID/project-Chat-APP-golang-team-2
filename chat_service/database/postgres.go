@@ -1,11 +1,11 @@
 package database
 
 import (
+	"chat-service/app/models"
+	"chat-service/config"
 	"fmt"
 	"log"
 	"os"
-	"project_chat_app/chat_service/app/models"
-	"project_chat_app/chat_service/config"
 
 	"time"
 

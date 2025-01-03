@@ -1,12 +1,12 @@
 package helper
 
 import (
+	"chat-service/config"
 	"context"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"project_chat_app/chat_service/config"
 	"strconv"
 	"strings"
 

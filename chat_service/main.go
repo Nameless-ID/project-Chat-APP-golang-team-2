@@ -1,13 +1,13 @@
 package main
 
 import (
+	"chat-service/app/models"
+	"chat-service/app/service"
+	"chat-service/config"
+	pb "chat-service/proto/script"
 	"fmt"
 	"log"
 	"net"
-	"project_chat_app/chat_service/app/models"
-	"project_chat_app/chat_service/app/service"
-	"project_chat_app/chat_service/config"
-	pb "project_chat_app/chat_service/proto/script"
 
 	"google.golang.org/grpc"
 	"gorm.io/driver/postgres"

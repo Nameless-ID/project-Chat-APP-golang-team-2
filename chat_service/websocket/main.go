@@ -1,12 +1,12 @@
 package main
 
 import (
+	"chat-service/helper"
+	pb "chat-service/proto/script"
 	"context"
 	"fmt"
 	"log"
 	"net/http"
-	"project_chat_app/chat_service/helper"
-	pb "project_chat_app/chat_service/proto/script"
 	"strconv"
 	"strings"
 	"sync"

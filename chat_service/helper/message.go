@@ -3,7 +3,7 @@ package helper
 import (
 	"context"
 
-	pb "project_chat_app/chat_service/proto/script"
+	pb "chat-service/proto/script"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
